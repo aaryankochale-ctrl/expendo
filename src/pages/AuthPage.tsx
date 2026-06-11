@@ -131,7 +131,7 @@ export const AuthPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="font-sans text-xs text-slate-400 dark:text-slate-500">Regular Income detected</p>
-                  <p className="font-sans text-sm font-semibold text-white">Apex Corp Salary +$5,200</p>
+                  <p className="font-sans text-sm font-semibold text-white">Apex Corp Salary +₹5,200</p>
                 </div>
               </div>
               <span className="font-mono text-xs text-emerald-400 px-2 py-1 bg-emerald-500/10 rounded-md">Validated</span>
@@ -144,7 +144,7 @@ export const AuthPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="font-sans text-xs text-slate-400 dark:text-slate-500">AI Optimization Tip</p>
-                  <p className="font-sans text-sm font-semibold text-white">Cancel inactive subscriptions to save $45/mo</p>
+                  <p className="font-sans text-sm font-semibold text-white">Cancel inactive subscriptions to save ₹45/mo</p>
                 </div>
               </div>
             </div>

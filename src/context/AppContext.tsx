@@ -122,7 +122,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       freshInsights.push({
         id: 'ins-dining',
         title: 'Dining Out Outliers Detected',
-        description: `Your restaurant and coffee expenditures sum up to $${totalDining.toFixed(2)} list-wide. Consolidating your coffee runs could save you up to $45/month.`,
+        description: `Your restaurant and coffee expenditures sum up to ₹${totalDining.toFixed(2)} list-wide. Consolidating your coffee runs could save you up to ₹45/month.`,
         type: 'warning',
       });
     }
@@ -134,7 +134,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       freshInsights.push({
         id: 'ins-subs',
         title: 'Subscription Audit Suggested',
-        description: `You are spending $${totalSubs.toFixed(2)} on active subscriptions. Consider auditing Netflix/Spotify to cancel any inactive services.`,
+        description: `You are spending ₹${totalSubs.toFixed(2)} on active subscriptions. Consider auditing Netflix/Spotify to cancel any inactive services.`,
         type: 'optimization',
       });
     } else {
@@ -156,21 +156,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       freshInsights.push({
         id: 'ins-savings',
         title: 'Healthy Savings Rate',
-        description: `Stellar work! Your current net savings rate is ${savingsPercentage.toFixed(1)}% ($${netSavings.toFixed(2)}), which is well above the recommended 20% benchmark.`,
+        description: `Stellar work! Your current net savings rate is ${savingsPercentage.toFixed(1)}% (₹${netSavings.toFixed(2)}), which is well above the recommended 20% benchmark.`,
         type: 'info',
       });
     } else if (savingsPercentage > 0) {
       freshInsights.push({
         id: 'ins-savings',
         title: 'Savings Optimization Recommended',
-        description: `Your savings rate is ${savingsPercentage.toFixed(1)}% ($${netSavings.toFixed(2)}). Trimming utilities or random retail expenses could push you towards the standard 20% healthy target.`,
+        description: `Your savings rate is ${savingsPercentage.toFixed(1)}% (₹${netSavings.toFixed(2)}). Trimming utilities or random retail expenses could push you towards the standard 20% healthy target.`,
         type: 'optimization',
       });
     } else {
       freshInsights.push({
         id: 'ins-savings',
         title: 'Overspending Alert',
-        description: `Your expenses currently exceed or equal your total recognized income of $${totalIncome.toFixed(2)}. We recommend establishing a strict $100 emergency spending buffer immediately.`,
+        description: `Your expenses currently exceed or equal your total recognized income of ₹${totalIncome.toFixed(2)}. We recommend establishing a strict ₹100 emergency spending buffer immediately.`,
         type: 'warning',
       });
     }

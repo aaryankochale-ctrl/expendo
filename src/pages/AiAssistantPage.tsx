@@ -103,7 +103,7 @@ export const AiAssistantPage: React.FC = () => {
             Natural Transaction Logs
           </h3>
           <p className="font-sans text-[10px] text-indigo-900 leading-relaxed">
-            Did you know you can also parse transaction records directly via chat? Try entering: <span className="italic font-medium">"Spent $20 at McDonald's yesterday"</span>
+            Did you know you can also parse transaction records directly via chat? Try entering: <span className="italic font-medium">"Spent ₹20 at McDonald's yesterday"</span>
           </p>
         </div>
       </div>

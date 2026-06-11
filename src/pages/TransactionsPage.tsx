@@ -72,7 +72,7 @@ export const TransactionsPage: React.FC = () => {
       // 3. TTS Confirmation
       if ('speechSynthesis' in window) {
         const typeStr = parsed.type === 'income' ? 'income' : 'expense';
-        const msg = new SpeechSynthesisUtterance(`Successfully added an ${typeStr} of ${parsed.amount} dollars for ${parsed.title}`);
+        const msg = new SpeechSynthesisUtterance(`Successfully added an ${typeStr} of ${parsed.amount} rupees for ${parsed.title}`);
         window.speechSynthesis.speak(msg);
       }
 
@@ -334,8 +334,8 @@ export const TransactionsPage: React.FC = () => {
             >
               <option value="date-desc">Newest Calendar Dates</option>
               <option value="date-asc">Oldest Calendar Dates</option>
-              <option value="amount-desc">Highest Amount ($)</option>
-              <option value="amount-asc">Lowest Amount ($)</option>
+              <option value="amount-desc">Highest Amount (₹)</option>
+              <option value="amount-asc">Lowest Amount (₹)</option>
             </select>
           </div>
 
@@ -383,7 +383,7 @@ export const TransactionsPage: React.FC = () => {
                     </td>
                     <td className="p-4 font-mono font-bold text-sm text-right">
                       <span className={isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-100'}>
-                        {isIncome ? '+' : '-'}${tx.amount.toFixed(2)}
+                        {isIncome ? '+' : '-'}₹{tx.amount.toFixed(2)}
                       </span>
                     </td>
                     <td className="p-4 text-center">
@@ -442,7 +442,7 @@ export const TransactionsPage: React.FC = () => {
                     </span>
                   </div>
                   <span className={`font-mono font-bold text-sm ${isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-100'}`}>
-                    {isIncome ? '+' : '-'}${tx.amount.toFixed(2)}
+                    {isIncome ? '+' : '-'}₹{tx.amount.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -514,7 +514,7 @@ export const TransactionsPage: React.FC = () => {
                 </label>
                 <div className="relative">
                   <textarea
-                    placeholder="e.g., 'Spent 45 dollars on petrol today' or 'Earned $1200 on freelance design yesterday'"
+                    placeholder="e.g., 'Spent 45 rupees on petrol today' or 'Earned ₹1200 on freelance design yesterday'"
                     className="w-full min-h-16 bg-white dark:bg-slate-900 border border-indigo-100 focus:border-indigo-600 focus:outline-hidden rounded-xl text-xs p-3 pr-12 font-sans transition-colors"
                     value={naturalText}
                     onChange={(e) => setNaturalText(e.target.value)}
@@ -609,7 +609,7 @@ export const TransactionsPage: React.FC = () => {
 
                   {/* Amount */}
                   <div>
-                    <label className="block text-[11px] font-sans font-semibold text-slate-600 dark:text-slate-300 mb-1">Amount ($)</label>
+                    <label className="block text-[11px] font-sans font-semibold text-slate-600 dark:text-slate-300 mb-1">Amount (₹)</label>
                     <input
                       type="number"
                       step="0.01"
