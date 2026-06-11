@@ -13,8 +13,10 @@ import {
   ArrowDownRight,
   HelpCircle,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Inbox
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const CATEGORIES = [
   'Housing',
@@ -78,13 +80,16 @@ export const TransactionsPage: React.FC = () => {
       setCategory(parsed.category);
       setDate(parsed.date);
       setSuccessMessage('AI processed successfully! Review populated fields below.');
+      toast.success('AI successfully extracted data');
     } catch {
       setSuccessMessage('AI was unable to parse. Please fulfill manually.');
+      toast.error('AI was unable to parse the transaction.');
     } finally {
       setAiParsing(false);
     }
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // Handle Form Submission
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,16 +98,23 @@ export const TransactionsPage: React.FC = () => {
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) return;
 
-    await addTransaction({
-      title: title.trim(),
-      amount: parsedAmount,
-      type,
-      category,
-      date,
-    });
-
-    setIsModalOpen(false);
-    resetForm();
+    setIsSubmitting(true);
+    try {
+      await addTransaction({
+        title: title.trim(),
+        amount: parsedAmount,
+        type,
+        category,
+        date,
+      });
+      toast.success('Transaction added successfully');
+      setIsModalOpen(false);
+      resetForm();
+    } catch (err) {
+      toast.error('Failed to add transaction');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Category Color badges helper
@@ -192,7 +204,7 @@ export const TransactionsPage: React.FC = () => {
           <div>
             <select
               value={selectedType}
-              onChange={(e) => { setSelectedType(e.target.value as any); setCurrentPage(1); }}
+              onChange={(e) => { setSelectedType(e.target.value as TransactionType | 'all'); setCurrentPage(1); }}
               className="w-full bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-600 focus:bg-white dark:bg-slate-900 focus:outline-hidden rounded-xl text-sm px-4 py-3 font-sans cursor-pointer transition-colors"
             >
               <option value="all">All Flow Types</option>
@@ -224,7 +236,7 @@ export const TransactionsPage: React.FC = () => {
             <span className="font-sans text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500">Order By:</span>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc')}
               className="bg-transparent text-xs font-sans font-bold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:text-indigo-400 focus:outline-hidden cursor-pointer"
             >
               <option value="date-desc">Newest Calendar Dates</option>
@@ -283,7 +295,7 @@ export const TransactionsPage: React.FC = () => {
                     </td>
                     <td className="p-4 text-center">
                       <button
-                        onClick={() => deleteTransaction(tx.id)}
+                        onClick={async () => { try { await deleteTransaction(tx.id); toast.success('Deleted successfully'); } catch(e) { toast.error('Failed to delete'); } }}
                         className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                         title="Delete record"
                       >
@@ -296,8 +308,16 @@ export const TransactionsPage: React.FC = () => {
 
               {currentItems.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-12 text-center text-slate-400 dark:text-slate-500 font-sans text-sm">
-                    No transactions matching filters. Modify search strings or parameters.
+                  <td colSpan={6} className="p-16">
+                    <div className="flex flex-col items-center justify-center text-center space-y-3">
+                      <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-2">
+                        <Inbox className="w-8 h-8" />
+                      </div>
+                      <h3 className="font-sans font-bold text-slate-800 dark:text-slate-100">No records found</h3>
+                      <p className="text-slate-400 dark:text-slate-500 font-sans text-sm max-w-xs">
+                        There are no transactions matching your current filters. Modify search strings or parameters.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -314,7 +334,7 @@ export const TransactionsPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[11px] text-slate-400 dark:text-slate-500">{tx.date}</span>
                   <button
-                    onClick={() => deleteTransaction(tx.id)}
+                    onClick={async () => { try { await deleteTransaction(tx.id); toast.success('Deleted successfully'); } catch(e) { toast.error('Failed to delete'); } }}
                     className="p-1 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -337,8 +357,14 @@ export const TransactionsPage: React.FC = () => {
           })}
 
           {currentItems.length === 0 && (
-            <div className="p-12 text-center text-slate-400 dark:text-slate-500 font-sans text-sm">
-              No transactions matching filters.
+            <div className="p-12 flex flex-col items-center justify-center text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-2">
+                <Inbox className="w-6 h-6" />
+              </div>
+              <h3 className="font-sans font-bold text-slate-800 dark:text-slate-100">No records found</h3>
+              <p className="text-slate-400 dark:text-slate-500 font-sans text-xs max-w-[200px]">
+                Try adjusting your filters or search terms.
+              </p>
             </div>
           )}
         </div>
@@ -521,8 +547,15 @@ export const TransactionsPage: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-sans font-bold rounded-xl cursor-pointer text-center transition-colors"
+                    disabled={isSubmitting}
+                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-sans font-bold rounded-xl cursor-pointer text-center transition-colors flex justify-center items-center gap-2 disabled:opacity-75"
                   >
+                    {isSubmitting && (
+                      <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                    )}
                     Commit Entry
                   </button>
                 </div>

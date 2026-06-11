@@ -15,6 +15,7 @@ import {
   Coffee,
   Info
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export const AiAssistantPage: React.FC = () => {
   const { chatHistory, sendChatMessage, clearChatHistory } = useApp();
@@ -40,7 +41,7 @@ export const AiAssistantPage: React.FC = () => {
     try {
       await sendChatMessage(currentText);
     } catch {
-      // ignore
+      toast.error('Failed to communicate with AI');
     } finally {
       setIsTyping(false);
     }
@@ -52,7 +53,7 @@ export const AiAssistantPage: React.FC = () => {
     try {
       await sendChatMessage(q);
     } catch {
-      // ignore
+      toast.error('Failed to communicate with AI');
     } finally {
       setIsTyping(false);
     }

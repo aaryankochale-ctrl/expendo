@@ -11,6 +11,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { TransactionsPage } from './pages/TransactionsPage';
 import { AiAssistantPage } from './pages/AiAssistantPage';
 import { motion } from 'motion/react';
+import { Toaster } from 'react-hot-toast';
 
 function AppShell() {
   const { user } = useApp();
@@ -59,6 +60,7 @@ function AppShell() {
 export default function App() {
   return (
     <AppProvider>
+      <Toaster position="top-right" toastOptions={{ className: 'font-sans text-sm', duration: 4000 }} />
       <AppShell />
     </AppProvider>
   );

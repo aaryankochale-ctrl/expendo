@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Sparkles, Mail, Lock, User, AlertCircle, Eye, EyeOff, DollarSign, Coins, Wallet, Banknote, PiggyBank, CreditCard, TrendingUp, Briefcase, Receipt, PieChart } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export const AuthPage: React.FC = () => {
   const { login, signup, isLoading } = useApp();
@@ -32,24 +33,30 @@ export const AuthPage: React.FC = () => {
 
     try {
       if (activeTab === 'login') {
-        await login(email);
+        await login(email, password);
+        toast.success('Successfully logged in!');
       } else {
-        await signup(email, name);
+        await signup(email, name, password);
+        toast.success('Account created successfully!');
       }
-    } catch (err: any) {
-      setError(err?.message || 'Authentication failed. Please verify credentials.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Authentication failed. Please verify credentials.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
   const handleDemoLogin = async (role: 'Aaryan' | 'Demo') => {
     try {
       if (role === 'Aaryan') {
-        await login('kochaleaaryan@gmail.com', 'Aaryan Kochale');
+        await login('kochaleaaryan@gmail.com', 'DemoPassword123!');
       } else {
-        await login('user@example.com', 'Sarah Jenkins');
+        await login('user@example.com', 'DemoPassword123!');
       }
+      toast.success('Demo login successful!');
     } catch (err) {
       setError('Demo login failed.');
+      toast.error('Demo login failed.');
     }
   };
 
