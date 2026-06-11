@@ -139,7 +139,7 @@ export const AiAssistantPage: React.FC = () => {
         {/* Message Log box */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {chatHistory.map((msg) => {
-            const isAi = msg.sender === 'ai';
+            const isAi = msg.role === 'ai';
             return (
               <div key={msg.id} className={`flex gap-3 max-w-[85%] ${isAi ? 'self-start mr-auto' : 'self-end ml-auto flex-row-reverse'}`}>
                 {/* Profile icon */}
@@ -158,11 +158,11 @@ export const AiAssistantPage: React.FC = () => {
                   }`}>
                     {/* Render basic markdown/strong styling manually */}
                     <p style={{ whiteSpace: 'pre-line' }}>
-                      {msg.text.split('**').map((str, i) => (i % 2 === 1 ? <strong key={i} className="font-extrabold">{str}</strong> : str))}
+                      {(msg.content || '').split('**').map((str, i) => (i % 2 === 1 ? <strong key={i} className="font-extrabold">{str}</strong> : str))}
                     </p>
                   </div>
                   <span className={`block font-mono text-[9px] text-slate-400 dark:text-slate-500 ${!isAi && 'text-right'}`}>
-                    {msg.timestamp}
+                    {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now'}
                   </span>
                 </div>
               </div>
