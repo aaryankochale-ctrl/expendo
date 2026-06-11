@@ -14,7 +14,10 @@ import {
   HelpCircle,
   TrendingUp,
   TrendingDown,
-  Inbox
+  Inbox,
+  Mic,
+  MicOff,
+  Loader2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -40,6 +43,96 @@ export const TransactionsPage: React.FC = () => {
   const [naturalText, setNaturalText] = useState('');
   const [aiParsing, setAiParsing] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Speech Recognition States
+  const [isListening, setIsListening] = useState(false);
+  const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
+  const [speechError, setSpeechError] = useState('');
+
+  // Voice Processing Flow
+  const handleVoiceProcess = async (transcribedText: string) => {
+    if (!transcribedText.trim()) return;
+    setIsVoiceProcessing(true);
+    setSpeechError('');
+    try {
+      // 1. Parse via AI
+      const parsed = await parseNaturalLanguageTransaction(transcribedText);
+      
+      // 2. Auto-commit to DB
+      await addTransaction({
+        title: parsed.title,
+        amount: parsed.amount,
+        type: parsed.type,
+        category: parsed.category,
+        date: parsed.date,
+      });
+
+      toast.success('Voice transaction auto-saved!');
+      
+      // 3. TTS Confirmation
+      if ('speechSynthesis' in window) {
+        const typeStr = parsed.type === 'income' ? 'income' : 'expense';
+        const msg = new SpeechSynthesisUtterance(`Successfully added an ${typeStr} of ${parsed.amount} dollars for ${parsed.title}`);
+        window.speechSynthesis.speak(msg);
+      }
+
+      setIsModalOpen(false);
+      resetForm();
+    } catch (err) {
+      toast.error('Failed to process voice transaction.');
+      setSpeechError('Failed to understand. Please try again or type manually.');
+      // If auto-commit fails, populate form as fallback
+      setNaturalText(transcribedText);
+    } finally {
+      setIsVoiceProcessing(false);
+    }
+  };
+
+  const toggleListening = () => {
+    // @ts-ignore - Vendor prefixes
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      toast.error("Your browser doesn't support speech recognition.");
+      return;
+    }
+
+    if (isListening) {
+      // It will stop automatically due to onend, but we can force it
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setSpeechError('');
+      setNaturalText('');
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setNaturalText(transcript);
+      handleVoiceProcess(transcript);
+    };
+
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+      setSpeechError('Microphone error or permission denied.');
+      toast.error('Microphone error: ' + event.error);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
 
   // Form states
   const [title, setTitle] = useState('');
@@ -419,19 +512,37 @@ export const TransactionsPage: React.FC = () => {
                   <Sparkles className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-300" />
                   AI Natural Language Smart-Add Input
                 </label>
-                <textarea
-                  placeholder="e.g., 'Spent 45 dollars on petrol today' or 'Earned $1200 on freelance design yesterday'"
-                  className="w-full min-h-16 bg-white dark:bg-slate-900 border border-indigo-100 focus:border-indigo-600 focus:outline-hidden rounded-xl text-xs p-3 font-sans transition-colors"
-                  value={naturalText}
-                  onChange={(e) => setNaturalText(e.target.value)}
-                />
+                <div className="relative">
+                  <textarea
+                    placeholder="e.g., 'Spent 45 dollars on petrol today' or 'Earned $1200 on freelance design yesterday'"
+                    className="w-full min-h-16 bg-white dark:bg-slate-900 border border-indigo-100 focus:border-indigo-600 focus:outline-hidden rounded-xl text-xs p-3 pr-12 font-sans transition-colors"
+                    value={naturalText}
+                    onChange={(e) => setNaturalText(e.target.value)}
+                    disabled={isVoiceProcessing}
+                  />
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    disabled={isVoiceProcessing}
+                    className={`absolute top-2 right-2 p-2 rounded-lg transition-all ${
+                      isListening 
+                        ? 'bg-rose-100 text-rose-600 animate-pulse' 
+                        : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600'
+                    } disabled:opacity-50`}
+                    title="Use Voice Command"
+                  >
+                    {isVoiceProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : isListening ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+                  </button>
+                </div>
+                {speechError && <p className="font-sans text-[10px] text-rose-600">{speechError}</p>}
+
                 
                 <div className="flex items-center justify-between gap-4">
                   <span className="font-sans text-[10px] text-slate-450 italic">AI extracts amounts, types, dates, and merchants</span>
                   <button
                     type="button"
                     onClick={handleAiParse}
-                    disabled={aiParsing || !naturalText.trim()}
+                    disabled={aiParsing || isVoiceProcessing || !naturalText.trim()}
                     className="py-1.5 px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-sans font-semibold text-[11px] rounded-lg tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40"
                   >
                     {aiParsing ? 'Processing...' : 'Process with AI'}
