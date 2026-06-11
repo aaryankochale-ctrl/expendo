@@ -31,12 +31,14 @@ export const AuthPage: React.FC = () => {
       return;
     }
 
+    const finalEmail = email.includes('@') ? email : `${email}@demo.com`;
+
     try {
       if (activeTab === 'login') {
-        await login(email, password);
+        await login(finalEmail, password);
         toast.success('Successfully logged in!');
       } else {
-        await signup(email, name, password);
+        await signup(finalEmail, name, password);
         toast.success('Account created successfully!');
       }
     } catch (err) {
@@ -47,16 +49,25 @@ export const AuthPage: React.FC = () => {
   };
 
   const handleDemoLogin = async (role: 'Aaryan' | 'Demo') => {
+    const demoEmail = role === 'Aaryan' ? 'kochaleaaryan@gmail.com' : 'user@example.com';
+    const demoName = role === 'Aaryan' ? 'Aaryan Kochale' : 'Sarah Jenkins';
+    const demoPass = 'DemoPassword123!';
+
     try {
-      if (role === 'Aaryan') {
-        await login('kochaleaaryan@gmail.com', 'DemoPassword123!');
-      } else {
-        await login('user@example.com', 'DemoPassword123!');
-      }
+      // First try to login
+      await login(demoEmail, demoPass);
       toast.success('Demo login successful!');
     } catch (err) {
-      setError('Demo login failed.');
-      toast.error('Demo login failed.');
+      // If login fails (user doesn't exist), try to sign up
+      try {
+        await signup(demoEmail, demoName, demoPass);
+        toast.success('Demo account created and logged in!');
+      } catch (signupErr: any) {
+        // If it's a rate limit error or email confirmation error, display it clearly
+        const msg = signupErr?.message || 'Demo login failed.';
+        setError(msg);
+        toast.error(msg);
+      }
     }
   };
 
