@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Sparkles, Mail, Lock, User, AlertCircle, Eye, EyeOff, DollarSign, Coins, Wallet, Banknote, PiggyBank, CreditCard, TrendingUp, Briefcase, Receipt, PieChart } from 'lucide-react';
+import { Sparkles, Mail, Lock, User, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 export const AuthPage: React.FC = () => {
   const { login, signup, isLoading } = useApp();
@@ -72,39 +73,14 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-800/50 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col lg:flex-row">
       
-      {/* Left panel: Visual, premium onboarding (Only shown on Desktop) */}
+      {/* Left panel: Professional and clean marketing (Only shown on Desktop) */}
       <div className="hidden lg:flex lg:w-1/2 bg-slate-900 text-white relative overflow-hidden flex-col justify-between p-12">
-        {/* Abstract design elements */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -mr-40 -mt-40 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl -ml-40 -mb-40 pointer-events-none" />
-        
-        {/* Money Stickers Background - Positioned on the right/empty space */}
-        {/* Top Right Cluster */}
-        <Coins className="absolute top-12 right-12 w-28 h-28 text-indigo-400/10 rotate-12 pointer-events-none" />
-        <TrendingUp className="absolute top-32 right-24 w-32 h-32 text-emerald-400/5 -rotate-12 pointer-events-none" />
-        <PiggyBank className="absolute top-20 right-1/3 w-24 h-24 text-white/5 rotate-6 pointer-events-none" />
-        
-        {/* Middle Right Cluster */}
-        <CreditCard className="absolute top-1/2 right-12 w-20 h-20 text-emerald-400/5 -rotate-6 pointer-events-none -translate-y-1/2" />
-        <PieChart className="absolute top-1/2 right-1/4 w-24 h-24 text-white/5 rotate-12 pointer-events-none -translate-y-1/2" />
-        <DollarSign className="absolute top-1/3 right-8 w-20 h-20 text-indigo-400/5 rotate-45 pointer-events-none" />
-        
-        {/* Bottom Right Cluster */}
-        <Banknote className="absolute bottom-16 right-16 w-36 h-36 text-emerald-400/10 rotate-6 pointer-events-none" />
-        <Briefcase className="absolute bottom-36 right-24 w-20 h-20 text-emerald-400/5 rotate-12 pointer-events-none" />
-        <Wallet className="absolute bottom-56 right-12 w-28 h-28 text-indigo-400/5 -rotate-6 pointer-events-none" />
-        
-        {/* Bottom Center Cluster */}
-        <Receipt className="absolute bottom-12 right-1/3 w-24 h-24 text-white/5 -rotate-12 pointer-events-none" />
-        <DollarSign className="absolute bottom-24 right-1/2 w-32 h-32 text-emerald-400/10 -rotate-12 pointer-events-none" />
-        
-        {/* Subtle Left Side Additions */}
-        <DollarSign className="absolute top-1/4 left-10 w-24 h-24 text-indigo-400/5 -rotate-12 pointer-events-none" />
-        <Wallet className="absolute bottom-1/4 left-8 w-20 h-20 text-white/5 rotate-6 pointer-events-none" />
-        <Coins className="absolute top-1/2 left-4 w-16 h-16 text-emerald-400/5 rotate-45 pointer-events-none" />
-        
+        {/* Abstract subtle gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 to-slate-900 z-0"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-10 mix-blend-overlay pointer-events-none"></div>
+
         {/* Logo */}
         <div className="flex items-center gap-3 relative z-10">
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
@@ -113,51 +89,41 @@ export const AuthPage: React.FC = () => {
           <span className="font-sans font-bold text-xl tracking-tight">Expendo</span>
         </div>
 
-        {/* Dynamic Mock Visuals */}
-        <div className="my-auto max-w-md relative z-10 space-y-8">
-          <h1 className="font-sans font-extrabold text-4xl leading-tight text-white tracking-tight">
-            Take absolute control of your <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">financial stream</span>.
+        {/* Realistic Content */}
+        <div className="my-auto max-w-md relative z-10 space-y-6">
+          <h1 className="font-sans font-bold text-4xl leading-tight text-white tracking-tight">
+            Manage your finances with clarity and confidence.
           </h1>
-          <p className="font-sans text-slate-400 dark:text-slate-500 text-base leading-relaxed">
-            Experience real-time budgetary foresight guided by bespoke AI suggestions. Understand trends, parse invoices in plain English, and converse with a personal financial consultant in seconds.
+          <p className="font-sans text-slate-300 text-lg leading-relaxed">
+            A simple, secure, and professional way to track your spending, categorize transactions, and stay on top of your financial goals.
           </p>
 
-          {/* Micro metric badges */}
-          <div className="space-y-3 pt-4">
-            <div className="bg-white dark:bg-slate-900/5 border border-white/10 p-4 rounded-2xl backdrop-blur-md flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
-                  ▲
-                </div>
-                <div>
-                  <p className="font-sans text-xs text-slate-400 dark:text-slate-500">Regular Income detected</p>
-                  <p className="font-sans text-sm font-semibold text-white">Apex Corp Salary +₹5,200</p>
-                </div>
-              </div>
-              <span className="font-mono text-xs text-emerald-400 px-2 py-1 bg-emerald-500/10 rounded-md">Validated</span>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900/5 border border-white/10 p-4 rounded-2xl backdrop-blur-md flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="font-sans text-xs text-slate-400 dark:text-slate-500">AI Optimization Tip</p>
-                  <p className="font-sans text-sm font-semibold text-white">Cancel inactive subscriptions to save ₹45/mo</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ul className="space-y-4 pt-6">
+            {[
+              'Track expenses in real-time across your accounts.',
+              'Gain clear insights into your spending habits.',
+              'Bank-level security for your peace of mind.'
+            ].map((feature, i) => (
+              <li key={i} className="flex items-center gap-3 text-slate-300">
+                <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0" />
+                <span className="text-sm font-medium">{feature}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 relative z-10">
-          &copy; 2026 Expendo Inc. Enterprise grade safety with bank-level encryption. All rights reserved.
+        <div className="text-sm text-slate-400 relative z-10">
+          &copy; {new Date().getFullYear()} Expendo Inc. All rights reserved.
         </div>
       </div>
 
       {/* Right panel: Modern Card Form System */}
-      <div className="flex-1 flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 bg-slate-50 dark:bg-slate-800/50">
+      <div className="flex-1 flex flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24 bg-slate-50 dark:bg-slate-900 relative">
+        {/* Theme Toggle placed in the right panel */}
+        <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-50">
+          <ThemeToggle />
+        </div>
+
         <div className="mx-auto w-full max-w-sm lg:max-w-md">
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2 justify-center mb-8">
@@ -167,15 +133,15 @@ export const AuthPage: React.FC = () => {
             <span className="font-sans font-bold text-lg text-slate-800 dark:text-slate-100 tracking-tight">Expendo</span>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-100/50">
+          <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none relative z-10">
             {/* Nav segment */}
-            <div className="flex border-b border-slate-100 dark:border-slate-800 mb-8 p-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+            <div className="flex border-b border-slate-100 dark:border-slate-700 mb-8 p-1 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
               <button
                 type="button"
                 onClick={() => { setActiveTab('login'); setError(''); }}
                 className={`flex-1 py-2.5 text-center text-sm font-sans font-semibold rounded-lg transition-all ${
                   activeTab === 'login'
-                    ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm'
+                    ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 shadow-sm'
                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-300'
                 }`}
               >
@@ -186,7 +152,7 @@ export const AuthPage: React.FC = () => {
                 onClick={() => { setActiveTab('signup'); setError(''); }}
                 className={`flex-1 py-2.5 text-center text-sm font-sans font-semibold rounded-lg transition-all ${
                   activeTab === 'signup'
-                    ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm'
+                    ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 shadow-sm'
                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-300'
                 }`}
               >
@@ -222,7 +188,7 @@ export const AuthPage: React.FC = () => {
                     </span>
                     <input
                       type="text"
-                      className="w-full bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-600 focus:bg-white dark:bg-slate-900 focus:outline-hidden rounded-xl text-sm pl-9 pr-4 py-3 font-sans transition-colors"
+                      className="w-full bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-900 focus:outline-none rounded-xl text-sm pl-9 pr-4 py-3 font-sans transition-colors text-slate-900 dark:text-slate-100"
                       placeholder="Jane Jackson"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -240,7 +206,7 @@ export const AuthPage: React.FC = () => {
                   </span>
                   <input
                     type="email"
-                    className="w-full bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-600 focus:bg-white dark:bg-slate-900 focus:outline-hidden rounded-xl text-sm pl-9 pr-4 py-3 font-sans transition-colors"
+                    className="w-full bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-900 focus:outline-none rounded-xl text-sm pl-9 pr-4 py-3 font-sans transition-colors text-slate-900 dark:text-slate-100"
                     placeholder="example@finance.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -257,7 +223,7 @@ export const AuthPage: React.FC = () => {
                   </span>
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    className="w-full bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-600 focus:bg-white dark:bg-slate-900 focus:outline-hidden rounded-xl text-sm pl-9 pr-10 py-3 font-sans transition-colors"
+                    className="w-full bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-900 focus:outline-none rounded-xl text-sm pl-9 pr-10 py-3 font-sans transition-colors text-slate-900 dark:text-slate-100"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
