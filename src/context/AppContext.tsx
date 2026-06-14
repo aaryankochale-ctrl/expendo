@@ -11,6 +11,7 @@ interface AppContextProps {
   isLoading: boolean;
   login: (email: string, password?: string) => Promise<void>;
   signup: (email: string, name: string, password?: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   addTransaction: (tx: Omit<Transaction, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
@@ -192,6 +193,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const loginWithGoogle = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+      if (error) throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signup = async (email: string, name: string, password?: string) => {
     if (!password) throw new Error("Password is required for Supabase Auth.");
     setIsLoading(true);
@@ -350,6 +363,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isLoading,
         login,
         signup,
+        loginWithGoogle,
         logout,
         addTransaction,
         deleteTransaction,
