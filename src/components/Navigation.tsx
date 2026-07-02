@@ -10,12 +10,13 @@ import {
   X, 
   Wallet, 
   Sparkles,
-  User
+  User,
+  Calculator
 } from 'lucide-react';
 
 interface NavigationProps {
-  currentPage: 'dashboard' | 'transactions' | 'ai-assistant' | 'groups';
-  setCurrentPage: (page: 'dashboard' | 'transactions' | 'ai-assistant' | 'groups') => void;
+  currentPage: 'dashboard' | 'transactions' | 'ai-assistant' | 'groups' | 'emi-calculator';
+  setCurrentPage: (page: 'dashboard' | 'transactions' | 'ai-assistant' | 'groups' | 'emi-calculator') => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ currentPage, setCurrentPage }) => {
@@ -26,6 +27,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setCurrentP
     { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'transactions' as const, label: 'Transactions', icon: Receipt },
     { id: 'groups' as const, label: 'Split Groups', icon: User },
+    { id: 'emi-calculator' as const, label: 'EMI Calculator', icon: Calculator },
     { id: 'ai-assistant' as const, label: 'AI Assistant', icon: Bot },
   ];
 

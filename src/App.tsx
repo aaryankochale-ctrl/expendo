@@ -11,12 +11,13 @@ import { DashboardPage } from './pages/DashboardPage';
 import { TransactionsPage } from './pages/TransactionsPage';
 import { AiAssistantPage } from './pages/AiAssistantPage';
 import { GroupsPage } from './pages/GroupsPage';
+import { EmiCalculatorPage } from './pages/EmiCalculatorPage';
 import { motion } from 'motion/react';
 import { Toaster } from 'react-hot-toast';
 
 function AppShell() {
   const { user } = useApp();
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'transactions' | 'ai-assistant' | 'groups'>('dashboard');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'transactions' | 'ai-assistant' | 'groups' | 'emi-calculator'>('dashboard');
 
   if (!user) {
     return <AuthPage />;
@@ -33,6 +34,8 @@ function AppShell() {
         return <AiAssistantPage />;
       case 'groups':
         return <GroupsPage setCurrentPage={setCurrentPage} />;
+      case 'emi-calculator':
+        return <EmiCalculatorPage />;
       default:
         return <DashboardPage setCurrentPage={setCurrentPage} />;
     }
