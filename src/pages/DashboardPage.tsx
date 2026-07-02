@@ -75,7 +75,7 @@ export const DashboardPage: React.FC<{ setCurrentPage: (p: 'dashboard' | 'transa
     const dateStr = d.toISOString().split('T')[0];
     
     // Format label (e.g. "Jun 05")
-    const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const label = d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
 
     // Calculate sum of income and expenses on this specific date
     const incSum = transactions
@@ -132,7 +132,7 @@ export const DashboardPage: React.FC<{ setCurrentPage: (p: 'dashboard' | 'transa
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div className="space-y-2">
             <span className="font-sans text-xs font-semibold text-slate-400 dark:text-slate-500 block tracking-wider uppercase">Total Income</span>
-            <span className="font-mono text-2xl font-bold text-slate-800 dark:text-slate-100">₹{totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="font-mono text-2xl font-bold text-slate-800 dark:text-slate-100">₹{totalIncome.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-sans font-medium">
               <ArrowUpRight className="w-3.5 h-3.5" />
               <span>Income logs clear</span>
@@ -147,7 +147,7 @@ export const DashboardPage: React.FC<{ setCurrentPage: (p: 'dashboard' | 'transa
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div className="space-y-2">
             <span className="font-sans text-xs font-semibold text-slate-400 dark:text-slate-500 block tracking-wider uppercase">Total Outflows</span>
-            <span className="font-mono text-2xl font-bold text-slate-800 dark:text-slate-100">₹{totalExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="font-mono text-2xl font-bold text-slate-800 dark:text-slate-100">₹{totalExpense.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 dark:text-slate-500 text-xs font-sans font-medium">
               <span>Primary: {topCategoryName}</span>
             </div>
@@ -161,7 +161,7 @@ export const DashboardPage: React.FC<{ setCurrentPage: (p: 'dashboard' | 'transa
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div className="space-y-2">
             <span className="font-sans text-xs font-semibold text-slate-400 dark:text-slate-500 block tracking-wider uppercase">Total Savings</span>
-            <span className="font-mono text-2xl font-bold text-slate-800 dark:text-slate-100">₹{totalSavings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="font-mono text-2xl font-bold text-slate-800 dark:text-slate-100">₹{totalSavings.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             <div className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 text-xs font-sans font-medium">
               <PiggyBank className="w-3.5 h-3.5" />
               <span>Rate: {savingsRate.toFixed(1)}%</span>
@@ -177,7 +177,7 @@ export const DashboardPage: React.FC<{ setCurrentPage: (p: 'dashboard' | 'transa
           <div className="space-y-2">
             <span className="font-sans text-xs font-semibold text-slate-400 dark:text-slate-500 block tracking-wider uppercase">Net Balance</span>
             <span className={`font-mono text-2xl font-bold ${netBalance >= 0 ? 'text-slate-800 dark:text-slate-100' : 'text-rose-600 dark:text-rose-400'}`}>
-              {netBalance < 0 ? '-' : ''}₹{Math.abs(netBalance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {netBalance < 0 ? '-' : ''}₹{Math.abs(netBalance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             <div className={`flex items-center gap-1 text-xs font-sans font-medium ${netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
               {netBalance >= 0 ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}

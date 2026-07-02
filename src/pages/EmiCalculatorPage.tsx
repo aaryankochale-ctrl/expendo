@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calculator, DollarSign, Percent, Clock, AlertCircle } from 'lucide-react';
+import { Calculator, IndianRupee, Percent, Clock, AlertCircle } from 'lucide-react';
 
 export const EmiCalculatorPage: React.FC = () => {
   const [principal, setPrincipal] = useState<string>('100000');
@@ -65,7 +65,7 @@ export const EmiCalculatorPage: React.FC = () => {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <DollarSign className="w-4 h-4 text-slate-400" />
+                  <IndianRupee className="w-4 h-4 text-slate-400" />
                 </div>
                 <input
                   type="number"
