@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 
 interface NavigationProps {
-  currentPage: 'dashboard' | 'transactions' | 'ai-assistant';
-  setCurrentPage: (page: 'dashboard' | 'transactions' | 'ai-assistant') => void;
+  currentPage: 'dashboard' | 'transactions' | 'ai-assistant' | 'groups';
+  setCurrentPage: (page: 'dashboard' | 'transactions' | 'ai-assistant' | 'groups') => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ currentPage, setCurrentPage }) => {
@@ -25,6 +25,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setCurrentP
   const menuItems = [
     { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'transactions' as const, label: 'Transactions', icon: Receipt },
+    { id: 'groups' as const, label: 'Split Groups', icon: User },
     { id: 'ai-assistant' as const, label: 'AI Assistant', icon: Bot },
   ];
 

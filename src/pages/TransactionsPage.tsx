@@ -11,13 +11,13 @@ import {
   ArrowUpDown, 
   ArrowUpRight, 
   ArrowDownRight,
-  HelpCircle,
   TrendingUp,
   TrendingDown,
   Inbox,
   Mic,
   MicOff,
-  Loader2
+  Loader2,
+  Camera
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -36,13 +36,17 @@ const CATEGORIES = [
 ];
 
 export const TransactionsPage: React.FC = () => {
-  const { transactions, addTransaction, deleteTransaction, parseNaturalLanguageTransaction, isLoading } = useApp();
+  const { transactions, addTransaction, deleteTransaction, parseNaturalLanguageTransaction, scanReceipt, isLoading } = useApp();
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [naturalText, setNaturalText] = useState('');
   const [aiParsing, setAiParsing] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // File input ref for camera/upload
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Speech Recognition States
   const [isListening, setIsListening] = useState(false);
@@ -180,6 +184,73 @@ export const TransactionsPage: React.FC = () => {
     } finally {
       setAiParsing(false);
     }
+  };
+
+  // Receipt Scanner Logic
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsScanning(true);
+    setSuccessMessage('');
+    
+    try {
+      // 1. Read file as Data URL
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+      });
+
+      // 2. Compress Image using Canvas
+      const compressedBase64 = await compressImage(base64Data, 800);
+
+      // 3. Send to Supabase Edge Function
+      const parsed = await scanReceipt(compressedBase64);
+      
+      // 4. Populate Form
+      setTitle(parsed.title || '');
+      setAmount(parsed.amount ? parsed.amount.toString() : '');
+      setType(parsed.type === 'income' ? 'income' : 'expense');
+      setCategory(parsed.category || 'Others');
+      setDate(parsed.date || new Date().toISOString().split('T')[0]);
+      
+      setSuccessMessage('Receipt scanned! Review populated fields below.');
+      toast.success('Receipt successfully processed');
+    } catch (err: any) {
+      console.error(err);
+      setSuccessMessage('Failed to scan receipt. Please enter manually.');
+      toast.error(err.message || 'Error processing receipt');
+    } finally {
+      setIsScanning(false);
+      // Reset input so the same file can be selected again
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const compressImage = (base64Str: string, maxWidth = 800): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+    });
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -522,8 +593,24 @@ export const TransactionsPage: React.FC = () => {
                   />
                   <button
                     type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={aiParsing || isVoiceProcessing || isScanning}
+                    className="absolute top-2 right-12 p-2 rounded-lg transition-all bg-indigo-50 hover:bg-indigo-100 text-indigo-600 disabled:opacity-50"
+                    title="Scan Receipt / Take Photo"
+                  >
+                    {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                  </button>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    ref={fileInputRef}
+                    onChange={handleReceiptUpload}
+                    className="hidden" 
+                  />
+                  <button
+                    type="button"
                     onClick={toggleListening}
-                    disabled={isVoiceProcessing}
+                    disabled={isVoiceProcessing || aiParsing || isScanning}
                     className={`absolute top-2 right-2 p-2 rounded-lg transition-all ${
                       isListening 
                         ? 'bg-rose-100 text-rose-600 animate-pulse' 
@@ -542,10 +629,10 @@ export const TransactionsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleAiParse}
-                    disabled={aiParsing || isVoiceProcessing || !naturalText.trim()}
+                    disabled={aiParsing || isVoiceProcessing || isScanning || !naturalText.trim()}
                     className="py-1.5 px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-sans font-semibold text-[11px] rounded-lg tracking-wide flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40"
                   >
-                    {aiParsing ? 'Processing...' : 'Process with AI'}
+                    {aiParsing ? 'Processing...' : 'Process Text'}
                   </button>
                 </div>
 

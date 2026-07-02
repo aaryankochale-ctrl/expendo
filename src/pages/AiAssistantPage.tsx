@@ -40,8 +40,8 @@ export const AiAssistantPage: React.FC = () => {
 
     try {
       await sendChatMessage(currentText);
-    } catch {
-      toast.error('Failed to communicate with AI');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to communicate with AI');
     } finally {
       setIsTyping(false);
     }
@@ -52,8 +52,8 @@ export const AiAssistantPage: React.FC = () => {
     setIsTyping(true);
     try {
       await sendChatMessage(q);
-    } catch {
-      toast.error('Failed to communicate with AI');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to communicate with AI');
     } finally {
       setIsTyping(false);
     }

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, Transaction, ChatMessage, AiInsight } from '../types';
+import { User, Transaction, ChatMessage, AiInsight, Group, GroupExpense, GroupMember, ExpensePayment, ExpenseSplit } from '../types';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -15,9 +15,17 @@ interface AppContextProps {
   logout: () => Promise<void>;
   addTransaction: (tx: Omit<Transaction, 'id' | 'user_id' | 'created_at'>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
-  parseNaturalLanguageTransaction: (text: string) => Promise<Omit<Transaction, 'id' | 'user_id' | 'created_at'>>;
+  parseNaturalLanguageTransaction: (text: string) => Promise<any>;
+  scanReceipt: (imageBase64: string) => Promise<any>;
   sendChatMessage: (text: string) => Promise<void>;
   clearChatHistory: () => Promise<void>;
+  groups: Group[];
+  fetchGroups: () => Promise<void>;
+  createGroup: (name: string) => Promise<void>;
+  joinGroupByCode: (code: string) => Promise<void>;
+  addGroupGuestMember: (groupId: string, name: string) => Promise<void>;
+  addGroupMemberByEmail: (groupId: string, email: string) => Promise<void>;
+  createGroupExpense: (groupId: string, description: string, totalAmount: number, category: string, payments: any[], splits: any[]) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
@@ -27,6 +35,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [insights, setInsights] = useState<AiInsight[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Initialize Session
@@ -39,6 +48,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           name: session.user.user_metadata?.full_name || 'User',
         });
       }
+      setIsLoading(false);
+    }).catch((err) => {
+      console.error("Failed to get session:", err);
       setIsLoading(false);
     });
 
@@ -53,6 +65,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setUser(null);
         setTransactions([]);
         setChatHistory([]);
+        setGroups([]);
       }
     });
 
@@ -64,6 +77,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (user) {
       fetchTransactions();
       fetchChatHistory();
+      fetchGroups();
     }
   }, [user]);
 
@@ -268,16 +282,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const parseNaturalLanguageTransaction = async (text: string): Promise<Omit<Transaction, 'id' | 'user_id' | 'created_at'>> => {
+  const parseNaturalLanguageTransaction = async (text: string): Promise<any> => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('parse-transaction', {
         body: { text }
       });
       if (error) throw error;
-      return data; // Returns the parsed JSON from the edge function
+      return data;
+    } catch (err: any) {
+      throw err;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const scanReceipt = async (imageBase64: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('scan-receipt', {
+        body: { imageBase64 }
+      });
+
+      if (error) throw error;
+      if (data && data.error) throw new Error(data.error);
+      return data;
+    } catch (err: any) {
+      throw err;
     }
   };
 
@@ -307,7 +337,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         body: { prompt: text, transactions }
       });
       
-      if (aiErr) throw aiErr;
+      if (aiErr) {
+        if (aiErr.context) {
+          try {
+            const errData = await aiErr.context.json();
+            throw new Error(errData.error || 'Failed to analyze request.');
+          } catch (e) {
+            // If response wasn't JSON
+            if (e instanceof Error && e.message !== 'Failed to analyze request.') {
+              throw e;
+            }
+            throw new Error('AI service returned an unexpected error.');
+          }
+        }
+        throw aiErr;
+      }
 
       // 3. Insert AI response into DB
       const aiMessage = {
@@ -353,6 +397,175 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const fetchGroups = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('groups')
+        .select(`
+          *,
+          members:group_members(*),
+          expenses:group_expenses(*, payments:expense_payments(*), splits:expense_splits(*))
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      if (data) setGroups(data as unknown as Group[]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const createGroup = async (name: string) => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      // Call our robust Postgres RPC to generate the group with a unique room_code
+      const { data: newGroupId, error: rpcErr } = await supabase
+        .rpc('create_group_with_code', { group_name: name });
+        
+      if (rpcErr) throw rpcErr;
+      if (!newGroupId) throw new Error('Failed to create group');
+
+      const { error: memErr } = await supabase
+        .from('group_members')
+        .insert([{ 
+          group_id: newGroupId, 
+          user_id: user.id,
+          member_name: user.name 
+        }]);
+        
+      if (memErr) throw memErr;
+      
+      await fetchGroups();
+      toast.success('Group created!');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create group');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const joinGroupByCode = async (code: string) => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      const cleanCode = code.trim().toUpperCase();
+      
+      // Call the secure RPC function to bypass RLS and join the group
+      const { error: joinErr } = await supabase.rpc('join_group_by_code', { join_code: cleanCode });
+
+      if (joinErr) throw joinErr;
+
+      await fetchGroups();
+      toast.success('Joined group successfully!');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to join group');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addGroupGuestMember = async (groupId: string, name: string) => {
+    setIsLoading(true);
+    try {
+      // Generate a mock UUID for the offline friend
+      const mockUserId = crypto.randomUUID();
+      
+      const { error } = await supabase
+        .from('group_members')
+        .insert([{ 
+          group_id: groupId, 
+          user_id: mockUserId,
+          member_name: name
+        }]);
+        
+      if (error) throw error;
+      
+      await fetchGroups();
+      toast.success(`${name} added to the group!`);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add member');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addGroupMemberByEmail = async (groupId: string, email: string) => {
+    setIsLoading(true);
+    try {
+      // 1. Search for the user by email in the public profiles table
+      const { data: profile, error: searchErr } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .eq('email', email)
+        .single();
+        
+      if (searchErr || !profile) {
+        throw new Error('User not found. Make sure they have registered an account.');
+      }
+
+      // 2. Check if they are already in the group
+      const { data: existing } = await supabase
+        .from('group_members')
+        .select('id')
+        .eq('group_id', groupId)
+        .eq('user_id', profile.id)
+        .maybeSingle();
+        
+      if (existing) {
+        throw new Error('User is already a member of this group.');
+      }
+
+      // 3. Insert their real user ID into group_members
+      const { error: insertErr } = await supabase
+        .from('group_members')
+        .insert([{ 
+          group_id: groupId, 
+          user_id: profile.id,
+          member_name: profile.full_name || email.split('@')[0]
+        }]);
+        
+      if (insertErr) throw insertErr;
+      
+      await fetchGroups();
+      toast.success(`${profile.full_name || email} added to the group!`);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to add member');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const createGroupExpense = async (groupId: string, description: string, totalAmount: number, category: string, payments: any[], splits: any[]) => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      const { data: expense, error: expErr } = await supabase
+        .from('group_expenses')
+        .insert([{ group_id: groupId, creator_id: user.id, description, total_amount: totalAmount, category }])
+        .select()
+        .single();
+        
+      if (expErr) throw expErr;
+
+      const paymentsWithExp = payments.map(p => ({ ...p, expense_id: expense.id }));
+      const { error: payErr } = await supabase.from('expense_payments').insert(paymentsWithExp);
+      if (payErr) throw payErr;
+
+      const splitsWithExp = splits.map(s => ({ ...s, expense_id: expense.id }));
+      const { error: splitErr } = await supabase.from('expense_splits').insert(splitsWithExp);
+      if (splitErr) throw splitErr;
+
+      await fetchGroups();
+      toast.success('Expense added!');
+    } catch (err: any) {
+      toast.error('Failed to add group expense');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -368,8 +581,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addTransaction,
         deleteTransaction,
         parseNaturalLanguageTransaction,
+        scanReceipt,
         sendChatMessage,
         clearChatHistory,
+        groups,
+        fetchGroups,
+        createGroup,
+        joinGroupByCode,
+        addGroupGuestMember,
+        addGroupMemberByEmail,
+        createGroupExpense,
       }}
     >
       {children}

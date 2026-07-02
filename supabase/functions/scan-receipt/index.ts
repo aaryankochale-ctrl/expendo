@@ -14,19 +14,26 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json()
+    const { imageBase64 } = await req.json()
+
+    if (!imageBase64) {
+      throw new Error("No image data provided");
+    }
+
+    // Strip out the data URL prefix if present (e.g. "data:image/jpeg;base64,")
+    const base64Data = imageBase64.replace(/^data:image\/(png|jpeg|jpg);base64,/, "");
 
     const prompt = `
-      Extract the following transaction details from this text: "${text}".
+      Extract the transaction details from this receipt image.
       Return ONLY a raw JSON object (no markdown blocks like \`\`\`json) with these exact keys:
       - title (string, merchant name or brief description)
-      - amount (number, absolute value)
-      - type ("income" or "expense")
+      - amount (number, absolute total value)
+      - type ("income" or "expense", usually expense)
       - category ("Housing", "Groceries", "Dining Out", "Utilities", "Transport", "Subscriptions", "Entertainment", "Shopping", "Salary", "Freelance", or "Others")
-      - date (YYYY-MM-DD string, guess based on text or use today's date)
+      - date (YYYY-MM-DD string, guess based on receipt date or return today's date)
     `
 
-    // Call the Google Gemini API
+    // Call the Google Gemini API (gemini-1.5-pro natively supports images)
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`,
       {
@@ -35,7 +42,20 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }]
+          contents: [
+            { 
+              role: 'user', 
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: "image/jpeg",
+                    data: base64Data
+                  }
+                }
+              ] 
+            }
+          ]
         }),
       }
     )
@@ -56,10 +76,10 @@ serve(async (req) => {
     return new Response(JSON.stringify(parsedTx), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     })
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error.message || "Unknown error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
+      status: 200,
     })
   }
 })
